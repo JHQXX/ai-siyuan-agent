@@ -1,64 +1,26 @@
 # ============================================================
-# Nexus 3 个人私有 Maven 仓库 + Cloudflare Tunnel
+# Nexus 3 个人私有 Maven 仓库（最简版）
 # ============================================================
-# 域名: nexus.azhi-home.top
-# 安全: 通过 Cloudflare Tunnel 暴露，无需公网 IP，无需开放端口
+# 端口: 8081（让内网穿透能访问）
+# 数据: nexus-data volume（重启不丢）
 #
-# 使用步骤：
-#   1. cp .env.example .env，编辑填值
-#   2. 一键初始化 Tunnel（见 setup-tunnel.sh）
-#   3. docker compose up -d
+# 使用：
+#   docker compose up -d
+#   等 1-2 分钟，访问 http://localhost:8081
 # ============================================================
 
 services:
-  # ============================================================
-  # Nexus 私有仓库（只监听本地）
-  # ============================================================
   nexus:
     image: sonatype/nexus3:3.69.0
     container_name: nexus
     restart: always
     ports:
-      # ⚠️ 只绑定到 127.0.0.1，公网访问通过 Cloudflare Tunnel
-      - "127.0.0.1:8081:8081"
+      - "8081:8081"
     volumes:
       - nexus-data:/nexus-data
-      - /etc/localtime:/etc/localtime:ro
     environment:
       - INSTALL4J_ADD_VM_PARAMS=-Xms1g -Xmx1g
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/service/rest/v1/status"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
-    security_opt:
-      - no-new-privileges:true
-    networks:
-      - nexus-net
-
-  # ============================================================
-  # Cloudflare Tunnel（守护进程，转发公网请求到 Nexus）
-  # ============================================================
-  cloudflared:
-    image: cloudflare/cloudflared:2024.11.0
-    container_name: cloudflared
-    restart: always
-    command: tunnel --no-autoupdate run
-    environment:
-      # 注入 Cloudflare Tunnel 凭证（从 .env 读取）
-      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
-    depends_on:
-      nexus:
-        condition: service_healthy
-    networks:
-      - nexus-net
 
 volumes:
   nexus-data:
     name: nexus-data
-
-networks:
-  nexus-net:
-    name: nexus-net
-    driver: bridge

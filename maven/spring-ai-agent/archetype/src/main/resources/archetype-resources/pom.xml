@@ -79,6 +79,50 @@
         </dependencies>
     </dependencyManagement>
 
+    <!--
+        ============================================================
+        私有 Maven 仓库（jhqxx）配置
+        ============================================================
+        Nexus 部署在 nexus.azhi-home.top（已禁用匿名访问，需认证）
+
+        使用前请确保：
+        1. ~/.m2/settings.xml 中配置了 id=jhqxx 的 server：
+             <server>
+                 <id>jhqxx</id>
+                 <username>admin</username>
+                 <password>你的密码</password>
+             </server>
+
+        2. 需要使用私有包时，取消下面 <repositories> 的注释
+        3. 需要发布包时，取消下面 <distributionManagement> 的注释
+        ============================================================
+    -->
+    <repositories>
+        <!--
+        <repository>
+            <id>jhqxx</id>
+            <name>JHQXX Private Nexus</name>
+            <url>https://nexus.azhi-home.top/repository/my-private-maven/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        -->
+    </repositories>
+
+    <distributionManagement>
+        <!--
+        <repository>
+            <id>jhqxx</id>
+            <name>JHQXX Private Nexus</name>
+            <url>https://nexus.azhi-home.top/repository/my-private-maven/</url>
+        </repository>
+        -->
+    </distributionManagement>
+
     <build>
         <plugins>
             <plugin>
